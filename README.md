@@ -70,7 +70,8 @@
         app:xAixsPaddingBottom="12dp"
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />  
+        app:yAixsPaddingRight="8dp" />    
+        
 
 <img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-165153.png" width = "300" height = "540" alt="960" align=center />
   
