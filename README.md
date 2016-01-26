@@ -71,7 +71,7 @@
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
         app:yAixsPaddingRight="8dp" />    
-        
+
 
 <img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-165153.png" width = "300" height = "540" alt="960" align=center />
   
@@ -106,10 +106,10 @@
         app:xAixsPaddingBottom="12dp"
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />  
+        app:yAixsPaddingRight="8dp" />    
 
 
-![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170354.png)   
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170354.png" width = "300" height = "540" alt="960" align=center />
 
 #### app:xAixsPostion="RIGHT" app:yAixsPostion="TOP" app:pathModel="FILL"
 
@@ -144,7 +144,7 @@
         app:yAixsPaddingRight="8dp" />  
 
 
-![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170728.png)   
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170728.png" width = "300" height = "540" alt="960" align=center />
 
 
 #### app:xAixsPostion="RIGHT" app:yAixsPostion="BUTTOM" app:pathModel="FILL_STROKE"
@@ -180,7 +180,8 @@
         app:yAixsPaddingRight="8dp" />  
         
 
-![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170934.png) 
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170934.png" width = "300" height = "540" alt="960" align=center />
+
 
 
 #### 属性说明  
