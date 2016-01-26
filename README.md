@@ -72,7 +72,7 @@
         app:yAixsPaddingLeft="8dp"
         app:yAixsPaddingRight="8dp" />  
 
-![image](Screenshot_20160126-165153.png)   
+![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-165153.png)   
 
 #### app:xAixsPostion="LEFT" app:yAixsPostion="TOP" app:pathModel="STROKE"
 
