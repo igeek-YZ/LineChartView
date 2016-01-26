@@ -2,7 +2,7 @@
 
 	class LineChartView extends View
 
-# 折线图，区域图 继承View绘制。一个文件。没有任何添加剂，看图说话 
+# 折线图，区域图 继承View绘制。一个文件。没有任何添加剂
 
 ####代码和效果说明：mainActivity   
 
