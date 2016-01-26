@@ -104,9 +104,10 @@
         app:xAixsPaddingBottom="12dp"
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />
+        app:yAixsPaddingRight="8dp" />  
+        
 
-![image](Screenshot_20160126-170354.png)   
+![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170354.png)   
 
 #### app:xAixsPostion="RIGHT" app:yAixsPostion="TOP" app:pathModel="FILL"
 
@@ -140,7 +141,7 @@
         app:yAixsPaddingLeft="8dp"
         app:yAixsPaddingRight="8dp" />
 
-![image](Screenshot_20160126-170728.png)   
+![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170728.png)   
 
 
 #### app:xAixsPostion="RIGHT" app:yAixsPostion="BUTTOM" app:pathModel="FILL_STROKE"
@@ -175,7 +176,7 @@
         app:yAixsPaddingLeft="8dp"
         app:yAixsPaddingRight="8dp" />
 
-![image](Screenshot_20160126-170934.png) 
+![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170934.png) 
 
 
 #### 属性说明  
