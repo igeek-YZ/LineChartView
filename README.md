@@ -72,7 +72,8 @@
         app:yAixsPaddingLeft="8dp"
         app:yAixsPaddingRight="8dp" />  
 
-![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-165153.png)   
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-165153.png" width = "300" height = "540" alt="960" align=center />
+  
 
 #### app:xAixsPostion="LEFT" app:yAixsPostion="TOP" app:pathModel="STROKE"
 
@@ -105,7 +106,7 @@
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
         app:yAixsPaddingRight="8dp" />  
-        
+
 
 ![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170354.png)   
 
@@ -139,7 +140,8 @@
         app:xAixsPaddingBottom="12dp"
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />
+        app:yAixsPaddingRight="8dp" />  
+
 
 ![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170728.png)   
 
@@ -174,7 +176,8 @@
         app:xAixsPaddingBottom="12dp"
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />
+        app:yAixsPaddingRight="8dp" />  
+        
 
 ![image](https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170934.png) 
 
