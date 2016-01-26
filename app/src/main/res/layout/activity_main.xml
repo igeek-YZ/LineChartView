@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#44929292"
+    android:orientation="vertical">
+
+    <com.igeek.linechartview.LineChartView
+        android:id="@+id/chartView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="#ffffff"
+        app:aixsWidth="1dp"
+        app:lineWidth="1px"
+        app:pathModel="FILL_STROKE"
+        app:xAixsPostion="RIGHT"
+        app:yAixsPostion="BUTTOM"
+        app:pathColor="#FF4081"
+        app:pathStrokeColor="#fff000"
+        app:pathStrokeWidth="2dp"
+        app:horLineColor="#44929292"
+        app:verLineColor="#44929292"
+        app:showHorGridLine="true"
+        app:showVerGridLine="true"
+        app:xAixsColor="#929292"
+        app:yAixsColor="#929292"
+        app:xAixsTitleColor="#929292"
+        app:yAixsTitleColor="#999999"
+        app:xAixsTitleSize="10sp"
+        app:yAixsTitleSize="12sp"
+        app:xAixsPaddingBottom="12dp"
+        app:xAixsPaddingTop="12dp"
+        app:yAixsPaddingLeft="8dp"
+        app:yAixsPaddingRight="8dp" />
+
+</LinearLayout>
