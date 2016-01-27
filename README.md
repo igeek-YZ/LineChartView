@@ -130,7 +130,7 @@
         app:yAixsPaddingRight="8dp" />   
 
 
-<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160127-221136.png" width = "549" height = "97.5" alt="960" align=center />
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160127-221136.png" width = "549" height = "547.5" alt="960" align=center />
 
 #### app:xAixsPostion="RIGHT" app:yAixsPostion="TOP" 
 
