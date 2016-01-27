@@ -2,7 +2,7 @@
 
 	class LineChartView extends View
 
-# 折线图，区域图 继承View绘制。一个文件。没有任何添加剂
+# 折线图，区域图 继承View绘制。心想从简。
 
 ####代码和效果说明：mainActivity   
 
@@ -13,14 +13,15 @@
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         chatView= (LineChartView) findViewById(R.id.chartView);
+        chatView.cleanOldLines();
         chatView.updateYAixsTitles(100,5)
                 .updateXAixsTitles(demoXAixsTitles())
-                .updateDataPoints(demoData())
+                .addChartLine(demo1Line())
+                .addChartLine(demo2Line())
                 .drawToUpdate();
     }
 
     public List<String> demoXAixsTitles() {
-
         List<String> demodata = new ArrayList<String>();
         for (int index = 0; index < 7; index++) {
             demodata.add("201" + index);
@@ -28,16 +29,42 @@
         return demodata;
     }
 
-    public List<LineChartView.DataAixsPoint> demoData() {
-
-        List<LineChartView.DataAixsPoint> demodata = new ArrayList<LineChartView.DataAixsPoint>();
-        for (int index = 0; index < 7; index++) {
-            LineChartView.DataAixsPoint aixsPoint = new LineChartView.DataAixsPoint();
+    public ChartLine demo1Line(){
+        ChartLine chartLine=new ChartLine();
+        List<DataAixsPoint> demodata = new ArrayList<DataAixsPoint>();
+        for (int index = 0; index < 3; index++) {
+            DataAixsPoint aixsPoint = new DataAixsPoint();
             aixsPoint.setAixsVal(new Random().nextInt(100));
             aixsPoint.setTitle(String.valueOf(aixsPoint.getAixsVal()));
             demodata.add(aixsPoint);
         }
-        return demodata;
+
+        chartLine.setDataPoints(demodata);
+        chartLine.setLineWidth(dp2px(2));
+        chartLine.setLineColor(Color.parseColor("#fff000"));
+        chartLine.setFillColor(Color.parseColor("#55FF4081"));
+        chartLine.setDrawModel(LineChartView.FILL_STROKE);
+
+        return chartLine;
+    }
+
+    public ChartLine demo2Line(){
+        ChartLine chartLine=new ChartLine();
+        List<DataAixsPoint> demodata = new ArrayList<DataAixsPoint>();
+        for (int index = 3; index < 7; index++) {
+            DataAixsPoint aixsPoint = new DataAixsPoint();
+            aixsPoint.setAixsVal(new Random().nextInt(100));
+            aixsPoint.setxAixsTitle("201" + index);
+            demodata.add(aixsPoint);
+        }
+
+        chartLine.setDataPoints(demodata);
+        chartLine.setLineWidth(dp2px(2));
+        chartLine.setLineColor(Color.parseColor("#FF4081"));
+        chartLine.setFillColor(Color.parseColor("#55fff000"));
+        chartLine.setDrawModel(LineChartView.FILL_STROKE);
+
+        return chartLine;
     }
 
 #### app:xAixsPostion="LEFT" app:yAixsPostion="BUTTOM"
@@ -51,15 +78,12 @@
         android:background="#ffffff"
         app:aixsWidth="1dp"
         app:lineWidth="1px"
-        app:pathModel="FILL_STROKE"
+        app:isAixsLineAlign="false"
         app:xAixsPostion="LEFT"
         app:yAixsPostion="BUTTOM"
-        app:pathColor="#FF4081"
-        app:pathStrokeColor="#fff000"
-        app:pathStrokeWidth="2dp"
         app:horLineColor="#44929292"
         app:verLineColor="#44929292"
-        app:showHorGridLine="false"
+        app:showHorGridLine="true"
         app:showVerGridLine="true"
         app:xAixsColor="#929292"
         app:yAixsColor="#929292"
@@ -70,13 +94,13 @@
         app:xAixsPaddingBottom="12dp"
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />    
+        app:yAixsPaddingRight="8dp" />   
 
 
-<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-165153.png" width = "300" height = "540" alt="960" align=center />
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160127-221045.png" width = "549" height = "559" alt="960" align=center />
   
 
-#### app:xAixsPostion="LEFT" app:yAixsPostion="TOP" app:pathModel="STROKE"
+#### app:xAixsPostion="LEFT" app:yAixsPostion="TOP" 
 
 	<com.igeek.linechartview.LineChartView
         android:id="@+id/chartView"
@@ -87,83 +111,9 @@
         android:background="#ffffff"
         app:aixsWidth="1dp"
         app:lineWidth="1px"
-        app:pathModel="STROKE"
+        app:isAixsLineAlign="false"
         app:xAixsPostion="LEFT"
         app:yAixsPostion="TOP"
-        app:pathColor="#FF4081"
-        app:pathStrokeColor="#fff000"
-        app:pathStrokeWidth="2dp"
-        app:horLineColor="#44929292"
-        app:verLineColor="#44929292"
-        app:showHorGridLine="true"
-        app:showVerGridLine="false"
-        app:xAixsColor="#929292"
-        app:yAixsColor="#929292"
-        app:xAixsTitleColor="#929292"
-        app:yAixsTitleColor="#999999"
-        app:xAixsTitleSize="10sp"
-        app:yAixsTitleSize="12sp"
-        app:xAixsPaddingBottom="12dp"
-        app:xAixsPaddingTop="12dp"
-        app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />    
-
-
-<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170354.png" width = "300" height = "540" alt="960" align=center />
-
-#### app:xAixsPostion="RIGHT" app:yAixsPostion="TOP" app:pathModel="FILL"
-
-	<com.igeek.linechartview.LineChartView
-        android:id="@+id/chartView"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:background="#ffffff"
-        app:aixsWidth="1dp"
-        app:lineWidth="1px"
-        app:pathModel="FILL"
-        app:xAixsPostion="RIGHT"
-        app:yAixsPostion="TOP"
-        app:pathColor="#FF4081"
-        app:pathStrokeColor="#fff000"
-        app:pathStrokeWidth="2dp"
-        app:horLineColor="#44929292"
-        app:verLineColor="#44929292"
-        app:showHorGridLine="true"
-        app:showVerGridLine="false"
-        app:xAixsColor="#929292"
-        app:yAixsColor="#929292"
-        app:xAixsTitleColor="#929292"
-        app:yAixsTitleColor="#999999"
-        app:xAixsTitleSize="10sp"
-        app:yAixsTitleSize="12sp"
-        app:xAixsPaddingBottom="12dp"
-        app:xAixsPaddingTop="12dp"
-        app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />  
-
-
-<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170728.png" width = "300" height = "540" alt="960" align=center />
-
-
-#### app:xAixsPostion="RIGHT" app:yAixsPostion="BUTTOM" app:pathModel="FILL_STROKE"
-
-	<com.igeek.linechartview.LineChartView
-        android:id="@+id/chartView"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:background="#ffffff"
-        app:aixsWidth="1dp"
-        app:lineWidth="1px"
-        app:pathModel="FILL_STROKE"
-        app:xAixsPostion="RIGHT"
-        app:yAixsPostion="BUTTOM"
-        app:pathColor="#FF4081"
-        app:pathStrokeColor="#fff000"
-        app:pathStrokeWidth="2dp"
         app:horLineColor="#44929292"
         app:verLineColor="#44929292"
         app:showHorGridLine="true"
@@ -177,20 +127,81 @@
         app:xAixsPaddingBottom="12dp"
         app:xAixsPaddingTop="12dp"
         app:yAixsPaddingLeft="8dp"
-        app:yAixsPaddingRight="8dp" />  
+        app:yAixsPaddingRight="8dp" />   
+
+
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160127-221136.png" width = "549" height = "97.5" alt="960" align=center />
+
+#### app:xAixsPostion="RIGHT" app:yAixsPostion="TOP" 
+
+	<com.igeek.linechartview.LineChartView
+        android:id="@+id/chartView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="#ffffff"
+        app:aixsWidth="1dp"
+        app:lineWidth="1px"
+        app:isAixsLineAlign="false"
+        app:xAixsPostion="RIGHT"
+        app:yAixsPostion="TOP"
+        app:horLineColor="#44929292"
+        app:verLineColor="#44929292"
+        app:showHorGridLine="true"
+        app:showVerGridLine="true"
+        app:xAixsColor="#929292"
+        app:yAixsColor="#929292"
+        app:xAixsTitleColor="#929292"
+        app:yAixsTitleColor="#999999"
+        app:xAixsTitleSize="10sp"
+        app:yAixsTitleSize="12sp"
+        app:xAixsPaddingBottom="12dp"
+        app:xAixsPaddingTop="12dp"
+        app:yAixsPaddingLeft="8dp"
+        app:yAixsPaddingRight="8dp" /> 
+
+
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160127-220857.png" width = "549" height = "558" alt="960" align=center />
+
+
+#### app:xAixsPostion="RIGHT" app:yAixsPostion="BUTTOM" app:isAixsLineAlign="true"
+
+	<com.igeek.linechartview.LineChartView
+        android:id="@+id/chartView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="#ffffff"
+        app:aixsWidth="1dp"
+        app:lineWidth="1px"
+        app:isAixsLineAlign="true"
+        app:xAixsPostion="RIGHT"
+        app:yAixsPostion="BUTTOM"
+        app:horLineColor="#44929292"
+        app:verLineColor="#44929292"
+        app:showHorGridLine="true"
+        app:showVerGridLine="true"
+        app:xAixsColor="#929292"
+        app:yAixsColor="#929292"
+        app:xAixsTitleColor="#929292"
+        app:yAixsTitleColor="#999999"
+        app:xAixsTitleSize="10sp"
+        app:yAixsTitleSize="12sp"
+        app:xAixsPaddingBottom="12dp"
+        app:xAixsPaddingTop="12dp"
+        app:yAixsPaddingLeft="8dp"
+        app:yAixsPaddingRight="8dp" /> 
         
 
-<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160126-170934.png" width = "300" height = "540" alt="960" align=center />
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/Screenshot_20160127-221247.png" width = "539" height = "546" alt="960" align=center />
 
 
 
 #### 属性说明  
 
 	<declare-styleable name="LineChartView">
-        <!-- 路径区域填充颜色 -->
-        <attr name="pathColor" format="color|reference"/>
-        <!-- 路径区域边框颜色 -->
-        <attr name="pathStrokeColor" format="color|reference"/>
         <!-- x轴的颜色 -->
         <attr name="xAixsColor" format="color|reference"/>
         <!-- Y轴的颜色 -->
@@ -207,8 +218,6 @@
         <attr name="aixsWidth" format="dimension|reference"/>
         <!-- 网格线的宽度 -->
         <attr name="lineWidth" format="dimension|reference"/>
-        <!-- 路径区域边框宽度 -->
-        <attr name="pathStrokeWidth" format="dimension|reference"/>
         <!-- x轴的标题字体大小 -->
         <attr name="xAixsTitleSize" format="dimension|reference"/>
         <!-- y轴的标题字体大小 -->
@@ -229,6 +238,8 @@
         <attr name="showVerGridLine" format="boolean"/>
         <!-- 是否显示水平网格线 -->
         <attr name="showHorGridLine" format="boolean"/>
+        <!-- 坐标轴是否和网格线对齐 -->
+        <attr name="isAixsLineAlign" format="boolean"/>
         <!-- x轴的位置 -->
         <attr name="xAixsPostion">
             <enum name="LEFT" value="0"/>
@@ -239,13 +250,7 @@
             <enum name="TOP" value="1"/>
             <enum name="BUTTOM" value="3"/>
         </attr>
-        <!-- 绘制路径区域的模式 -->
-        <attr name="pathModel">
-            <enum name="STROKE" value="4"/>
-            <enum name="FILL" value="5"/>
-            <enum name="FILL_STROKE" value="6"/>
-        </attr>
-    </declare-styleable>  
+    </declare-styleable> 
 
 #### 联系方式 (如遇bug可通过以下联系方式联系我)
 
