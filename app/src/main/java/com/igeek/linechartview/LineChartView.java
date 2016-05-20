@@ -4,68 +4,94 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by igeek on 16/1/24.
+ * author igeekcloud@gmail.com
  */
-public class LineChartView extends View {
+public class LineChartView extends View implements View.OnTouchListener {
 
+    private static final String TAG = LineChartView.class.getSimpleName();
+
+    //主要Y轴的节点集合
     private List<AixsPoint> yAixsPoints;
-    private List<AixsPoint> xAixsPoints=new ArrayList<AixsPoint>(0);
-    private List<DataAixsPoint> dataPoints = new ArrayList<DataAixsPoint>(0);
+    //辅助Y轴(与主要Y轴位置相反)的节点集合
+    private List<AixsPoint> yAuxAixsPoints;
+    //X轴的节点集合
+    private List<AixsPoint> xAixsPoints = new ArrayList<AixsPoint>(0);
+    //折线图的列表
+    private List<ChartLine> chartLines = new ArrayList<>(0);
+    //参数
+    private ChartAttrs ca;
 
-    //x轴的颜色
-    private int xAixsColor;
-    //Y轴的颜色
-    private int yAixsColor;
-    //水平方向网格线的颜色
-    private int horLineColor;
-    //垂直方向网格线的颜色
-    private int verLineColor;
+    //Y轴的最大值
+    private double maxYAixsVal;
+    //Y轴的步值个数
+    private int yAixsStepSize;
 
-    //x轴的标题字体颜色
-    private int xAixsTitleColor;
-    //y轴的标题字体颜色
-    private int yAixsTitleColor;
+    //辅助Y轴的最大值
+    private double maxYAuxAixsVal;
 
-    //路径区域填充颜色
-    private int pathColor;
-    //路径区域边框颜色
-    private int pathStrokeColor;
+    //指定标准线的数据数值
+    private int standardAixsVal;
+    //虚线默认长度
+    private int dashVal = 5;
 
-    //坐标系的宽度
-    private int aixsWidth;
-    //网格线的宽度
-    private int lineWidth;
-    //路径边框宽度
-    private int pathStrokeWidth;
+    //坐标系基准线绘制X坐标
+    private int xAixsOffset;
+    //坐标系基准线绘制Y坐标
+    private int yAixsOffset;
 
-    //x轴的标题字体大小
-    private int xAixsTitleSize;
-    //y轴的标题字体大小
-    private int yAixsTitleSize;
+    //是否禁止触摸响应
+    private boolean disableTouch;
+    //是否显示垂直网格线
+    private boolean showVerGridLine;
+    //是否显示水平网格线
+    private boolean showHorGridLine;
+    //坐标轴是否和网格线对齐
+    private boolean isAixsLineAlign;
+    //是否隐藏y轴标题
+    private boolean hideYAixsTitles;
+    //是否隐藏辅助y轴标题
+    private boolean showYAuxAixsTitles;
+    //是否显示指定标准线
+    private boolean showStandardLine;
+    //是否显示指定标准值
+    private boolean showStandardVal;
+    //指定标准线的样式
+    private int standardLineStyle;
 
-    private int xAixsPadding;
-    private int yAixsPadding;
+    //x轴的位置 -top or bottom
+    private int xAixsPostion;
+    //y轴的位置 -left or right
+    private int yAixsPostion;
 
-    //x轴的标题上填充间距
-    private int xAixsPaddingTop;
-    //x轴的标题底部填充间距
-    private int xAixsPaddingBottom;
+    //double的精确度
+    private int digit = 2;
 
-    //y轴的标题左填充间距
-    private int yAixsPaddingLeft;
-    //y轴的标题右填充间距
-    private int yAixsPaddingRight;
+    public static final int AIXS_LEFT = 0;
+    public static final int AIXS_TOP = 1;
+    public static final int AIXS_RIGHT = 2;
+    public static final int AIXS_BUTTOM = 3;
+
+    public static final int STROKE = 4;
+    public static final int FILL = 5;
+    public static final int FILL_STROKE = 6;
+    public static final int STROKE_DASH = 7;
+    public static final int DASH = 8;
+    public static final int SOLID = 9;
 
     //坐标系的画笔
     private Paint aixsPaint;
@@ -78,39 +104,7 @@ public class LineChartView extends View {
     //填充边框画笔
     private Paint pathStrokePaint;
 
-    //坐标系基准线绘制X坐标
-    private int xAixsOffset;
-    //坐标系基准线绘制Y坐标
-    private int yAixsOffset;
-
-    //是否显示垂直网格线
-    private boolean showVerGridLine;
-    //是否显示水平网格线
-    private boolean showHorGridLine;
-
-    //x轴的位置 -left or right
-    private int xAixsPostion;
-    //y轴的位置 -top or bottom
-    private int yAixsPostion;
-    //绘制路径的模式
-    private int pathModel;
-
-    //double的精确度
-    private int digit=2;
-
-    private static final int AIXS_LEFT = 0;
-    private static final int AIXS_TOP = 1;
-    private static final int AIXS_RIGHT = 2;
-    private static final int AIXS_BUTTOM = 3;
-
-    private static final int PATH_STROKE = 4;
-    private static final int PATH_FILL = 5;
-    private static final int PATH_FILL_STROKE = 6;
-
-    //Y轴的最大值
-    private double maxYAixsVal;
-    //Y轴的步值个数
-    private int yAixsStepSize;
+    private onTouchAixsDataListener listener;
 
     public LineChartView(Context context) {
         this(context, null);
@@ -123,89 +117,86 @@ public class LineChartView extends View {
     public LineChartView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initStyleConfig(context, attrs);
+        setOnTouchListener(this);
     }
 
     public void initStyleConfig(Context context, AttributeSet attrs) {
+        ca = new ChartAttrs();
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.LineChartView);
+        hideYAixsTitles = ta.getBoolean(R.styleable.LineChartView_hideYAixsTitles, false);
         showVerGridLine = ta.getBoolean(R.styleable.LineChartView_showVerGridLine, true);
         showHorGridLine = ta.getBoolean(R.styleable.LineChartView_showHorGridLine, true);
-        pathColor = ta.getColor(R.styleable.LineChartView_pathColor, Color.GRAY);
-        pathStrokeColor = ta.getColor(R.styleable.LineChartView_pathStrokeColor, Color.GRAY);
-        xAixsColor = ta.getColor(R.styleable.LineChartView_xAixsColor, Color.GRAY);
-        yAixsColor = ta.getColor(R.styleable.LineChartView_yAixsColor, Color.GRAY);
-        horLineColor = ta.getColor(R.styleable.LineChartView_horLineColor, xAixsColor);
-        verLineColor = ta.getColor(R.styleable.LineChartView_verLineColor, yAixsColor);
-        xAixsTitleColor = ta.getColor(R.styleable.LineChartView_xAixsTitleColor, xAixsColor);
-        yAixsTitleColor = ta.getColor(R.styleable.LineChartView_yAixsTitleColor, yAixsColor);
-        xAixsPostion = ta.getInt(R.styleable.LineChartView_xAixsPostion, AIXS_LEFT);
-        yAixsPostion = ta.getInt(R.styleable.LineChartView_yAixsPostion, AIXS_BUTTOM);
-        pathModel = ta.getInt(R.styleable.LineChartView_pathModel, PATH_STROKE);
-        aixsWidth = ta.getDimensionPixelSize(R.styleable.LineChartView_aixsWidth, 1);
-        lineWidth = ta.getDimensionPixelSize(R.styleable.LineChartView_lineWidth, 1);
-        pathStrokeWidth = ta.getDimensionPixelSize(R.styleable.LineChartView_pathStrokeWidth, 0);
-        xAixsTitleSize = ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsTitleSize, 14);
-        yAixsTitleSize = ta.getDimensionPixelSize(R.styleable.LineChartView_yAixsTitleSize, 14);
+        isAixsLineAlign = ta.getBoolean(R.styleable.LineChartView_isAixsLineAlign, false);
+        xAixsPostion = ta.getInt(R.styleable.LineChartView_xAixsPostion, AIXS_BUTTOM);
+        yAixsPostion = ta.getInt(R.styleable.LineChartView_yAixsPostion, AIXS_LEFT);
+        standardLineStyle = ta.getInt(R.styleable.LineChartView_standardLineStyle, DASH);
+        ca.setxAixsColor(ta.getColor(R.styleable.LineChartView_xAixsColor, Color.GRAY));
+        ca.setyAixsColor(ta.getColor(R.styleable.LineChartView_yAixsColor, Color.GRAY));
+        ca.setHorLineColor(ta.getColor(R.styleable.LineChartView_horLineColor, ca.getxAixsColor()));
+        ca.setVerLineColor(ta.getColor(R.styleable.LineChartView_verLineColor, ca.getyAixsColor()));
+        ca.setxAixsTitleColor(ta.getColor(R.styleable.LineChartView_xAixsTitleColor, ca.getxAixsColor()));
+        ca.setyAixsTitleColor(ta.getColor(R.styleable.LineChartView_yAixsTitleColor, ca.getyAixsColor()));
+        ca.setStandardLineColor(ta.getColor(R.styleable.LineChartView_standardLineColor, ca.getxAixsColor()));
+        ca.setStandardValColor(ta.getColor(R.styleable.LineChartView_standardValColor, Color.RED));
 
-        xAixsPadding = ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsPadding, 0);
-        yAixsPadding = ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsPadding, 0);
+        ca.setxAixsWidth(ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsWidth, 1));
+        ca.setyAixsWidth(ta.getDimensionPixelSize(R.styleable.LineChartView_yAixsWidth, 1));
 
-        xAixsPaddingTop = ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsPaddingTop, -1);
-        xAixsPaddingBottom = ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsPaddingBottom, -1);
+        ca.setxAixsTitleSize(ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsTitleSize, 14));
+        ca.setyAixsTitleSize(ta.getDimensionPixelSize(R.styleable.LineChartView_yAixsTitleSize, 14));
 
-        if (xAixsPaddingTop == -1) xAixsPaddingTop = xAixsPadding;
-        if (xAixsPaddingBottom == -1) xAixsPaddingBottom = xAixsPadding;
+        ca.setLineWidth(ta.getDimensionPixelSize(R.styleable.LineChartView_lineWidth, 1));
+        ca.setStandardLineWidth(ta.getDimensionPixelSize(R.styleable.LineChartView_standardLineWidth, 0));
+        ca.setStandardValSize(ta.getDimensionPixelSize(R.styleable.LineChartView_standardValSize, 16));
+        ca.setStandardValMargin(ta.getDimensionPixelSize(R.styleable.LineChartView_standardValMargin, 8));
 
-        yAixsPaddingLeft = ta.getDimensionPixelSize(R.styleable.LineChartView_yAixsPaddingLeft, -1);
-        yAixsPaddingRight = ta.getDimensionPixelSize(R.styleable.LineChartView_yAixsPaddingRight, -1);
+        ca.setxAixsPadding(ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsPadding, 0));
+        ca.setyAixsPadding(ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsPadding, 0));
 
-        if (yAixsPaddingLeft == -1) yAixsPaddingLeft = yAixsPadding;
-        if (yAixsPaddingRight == -1) yAixsPaddingRight = yAixsPadding;
+        ca.setxAixsPaddingTop(ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsPaddingTop, -1));
+        ca.setxAixsPaddingBottom(ta.getDimensionPixelSize(R.styleable.LineChartView_xAixsPaddingBottom, -1));
+
+        if (ca.getxAixsPaddingTop() == -1) ca.setxAixsPaddingTop(ca.getxAixsPadding());
+        if (ca.getxAixsPaddingBottom() == -1) ca.setxAixsPaddingBottom(ca.getxAixsPadding());
+
+        ca.setyAixsPaddingLeft(ta.getDimensionPixelSize(R.styleable.LineChartView_yAixsPaddingLeft, -1));
+        ca.setyAixsPaddingRight(ta.getDimensionPixelSize(R.styleable.LineChartView_yAixsPaddingRight, -1));
+
+        if (ca.getyAixsPaddingLeft() == -1) ca.setyAixsPaddingLeft(ca.getyAixsPadding());
+        if (ca.getyAixsPaddingRight() == -1) ca.setyAixsPaddingRight(ca.getyAixsPadding());
 
         ta.recycle();
 
         aixsPaint = new Paint();
         aixsPaint.setAntiAlias(true);
-        aixsPaint.setColor(xAixsColor);
-        aixsPaint.setStrokeWidth(aixsWidth);
         aixsPaint.setStyle(Paint.Style.STROKE);
 
         linePaint = new Paint();
         linePaint.setAntiAlias(true);
-        linePaint.setColor(horLineColor);
-        linePaint.setStrokeWidth(lineWidth);
+        linePaint.setColor(ca.getHorLineColor());
+        linePaint.setStrokeWidth(ca.getLineWidth());
         linePaint.setStyle(Paint.Style.STROKE);
 
         aixsTitlePaint = new Paint();
         aixsTitlePaint.setAntiAlias(true);
-        aixsTitlePaint.setColor(xAixsTitleColor);
-        aixsTitlePaint.setTextSize(xAixsTitleSize);
+        aixsTitlePaint.setColor(ca.getxAixsTitleColor());
+        aixsTitlePaint.setTextSize(ca.getxAixsTitleSize());
         aixsTitlePaint.setStyle(Paint.Style.STROKE);
 
-        if (pathModel == PATH_FILL_STROKE) {
 
-            pathPaint = new Paint();
-            pathPaint.setAntiAlias(true);
-            pathPaint.setColor(pathColor);
-            pathPaint.setStyle(Paint.Style.FILL);
+        pathPaint = new Paint();
+        pathPaint.setAntiAlias(true);
+        pathPaint.setStyle(Paint.Style.FILL);
 
-            pathStrokePaint = new Paint();
-            pathStrokePaint.setAntiAlias(true);
-            pathStrokePaint.setColor(pathStrokeColor);
-            pathStrokePaint.setStrokeWidth(pathStrokeWidth);
-            pathStrokePaint.setStyle(Paint.Style.STROKE);
+        pathStrokePaint = new Paint();
+        pathStrokePaint.setAntiAlias(true);
+        pathStrokePaint.setStyle(Paint.Style.STROKE);
 
-        } else if (pathModel == PATH_FILL) {
-            pathPaint = new Paint();
-            pathPaint.setAntiAlias(true);
-            pathPaint.setColor(pathColor);
-            pathPaint.setStyle(Paint.Style.FILL);
-        } else {
-            pathStrokePaint = new Paint();
-            pathStrokePaint.setAntiAlias(true);
-            pathStrokePaint.setColor(pathStrokeColor);
-            pathStrokePaint.setStrokeWidth(pathStrokeWidth);
-            pathStrokePaint.setStyle(Paint.Style.STROKE);
-        }
+    }
+
+    @Override
+    public void setOnTouchListener(OnTouchListener l) {
+        super.setOnTouchListener((l instanceof LineChartView) ? l : null);
     }
 
     @Override
@@ -231,51 +222,66 @@ public class LineChartView extends View {
      */
     public void reSetUpdateAxis(int measureWidth, int measureHeight) {
 
-        yAixsPoints = updateYAixsPoint();
+        yAixsPoints = updateYAixsPoint(maxYAixsVal, yAixsStepSize);
 
         if (xAixsPoints.size() <= 0 || yAixsPoints.size() <= 0) {
             return;
         }
+        yAuxAixsPoints = updateYAixsPoint(maxYAuxAixsVal, yAixsStepSize);
 
-        updateAixsOffset(measureWidth, measureHeight);
+        int maxyAuxAixsTitleWidth = calculateMaxTitleWidth(yAuxAixsPoints);
 
         int yAixsStepHeight = measureHeight / yAixsPoints.size();
-        int xAixsStepWidth = (measureWidth-xAixsPoints.get(xAixsPoints.size()-1).getTitleWidth()/2) / xAixsPoints.size();
+        int xAixsStepWidth = calculateXAixsStep(measureWidth, maxyAuxAixsTitleWidth);
+
+        updateAixsOffset(measureWidth, measureHeight, xAixsStepWidth);
 
         //计算Y轴的标题位置和坐标
         for (int index = 0; index < yAixsPoints.size(); index++) {
             AixsPoint yaisPoint = yAixsPoints.get(index);
-            int x = xAixsPostion == AIXS_RIGHT ? xAixsOffset + (measureWidth - xAixsOffset) / 2 : xAixsOffset / 2;
-            int y = yAixsPostion == AIXS_TOP ? (yAixsOffset + index * yAixsStepHeight) : (yAixsOffset - index * yAixsStepHeight);
-            int width = xAixsPostion == AIXS_RIGHT ? (measureWidth - xAixsOffset) : xAixsOffset;
+            int x = yAixsPostion == AIXS_RIGHT ? xAixsOffset + (measureWidth - xAixsOffset) / 2 : xAixsOffset / 2;
+            int y = xAixsPostion == AIXS_TOP ? (yAixsOffset + index * yAixsStepHeight) : (yAixsOffset - index * yAixsStepHeight);
+            int width = yAixsPostion == AIXS_RIGHT ? (measureWidth - xAixsOffset) : xAixsOffset;
             yaisPoint.setCenterY(y);
             yaisPoint.setCenterX(x);
             yaisPoint.setTitleWidth(width);
             yaisPoint.setTitleHeight(yAixsStepHeight);
         }
 
+        //计算辅助Y轴的标题位置和坐标
+        for (int index = 0; index < yAuxAixsPoints.size(); index++) {
+            int maxTitleRange = maxyAuxAixsTitleWidth + ca.getyAixsPaddingLeft() + ca.getyAixsPaddingRight();
+            AixsPoint yaisPoint = yAuxAixsPoints.get(index);
+            int x = yAixsPostion == AIXS_RIGHT ? maxTitleRange / 2 + getPaddingLeft() : measureWidth - maxTitleRange + maxTitleRange / 2 - getPaddingRight();
+            int y = xAixsPostion == AIXS_TOP ? (yAixsOffset + index * yAixsStepHeight) : (yAixsOffset - index * yAixsStepHeight);
+            yaisPoint.setCenterY(y);
+            yaisPoint.setCenterX(x);
+            yaisPoint.setTitleWidth(maxTitleRange);
+            yaisPoint.setTitleHeight(yAixsStepHeight);
+        }
+
         //计算X轴的标题位置和坐标
         for (int index = 0; index < xAixsPoints.size(); index++) {
             AixsPoint xaisPoint = xAixsPoints.get(index);
-            int x = xAixsPostion == AIXS_RIGHT ? (xAixsOffset - index * xAixsStepWidth) : xAixsOffset + index * xAixsStepWidth;
-            int y = yAixsPostion == AIXS_TOP ? yAixsOffset / 2 : yAixsOffset + (measureHeight - yAixsOffset) / 2;
-            int height = yAixsPostion == AIXS_TOP ? yAixsOffset : (measureHeight - yAixsOffset);
+            int x = yAixsPostion == AIXS_RIGHT ? (xAixsOffset - index * xAixsStepWidth) : xAixsOffset + index * xAixsStepWidth;
+            int y = xAixsPostion == AIXS_TOP ? yAixsOffset / 2 : yAixsOffset + (measureHeight - yAixsOffset) / 2;
+            int height = xAixsPostion == AIXS_TOP ? yAixsOffset : (measureHeight - yAixsOffset);
             xaisPoint.setCenterX(x);
             xaisPoint.setCenterY(y);
             xaisPoint.setTitleWidth(xAixsStepWidth);
             xaisPoint.setTitleHeight(height);
         }
         //更新数据的坐标准备绘制折线图或者区域图
-        updateDataPointPos();
+        updateChartLinePos();
     }
 
     /**
      * 更新Y轴的数值和标题
      */
-    public List<AixsPoint> updateYAixsPoint() {
+    public List<AixsPoint> updateYAixsPoint(double maxYAixsVal, int yAixsStepSize) {
         List<AixsPoint> points = new ArrayList<AixsPoint>();
         if (maxYAixsVal > 0 && yAixsStepSize > 0) {
-            double yAixsStepVal = douFormat(maxYAixsVal / yAixsStepSize,digit);
+            double yAixsStepVal = maxYAixsVal / yAixsStepSize;
             for (int index = 0; index <= yAixsStepSize; index++) {
                 AixsPoint point = new AixsPoint();
                 point.setTitle(String.valueOf(index * yAixsStepVal));
@@ -287,117 +293,213 @@ public class LineChartView extends View {
     }
 
     /**
-     * 计算坐标系X轴Y轴相对于视图(left,top)的偏移量
+     * 计算坐标系X轴Y轴相对于本身视图(left,top)的偏移量
      */
-    public void updateAixsOffset(int measureWidth, int measureHeight) {
+    public void updateAixsOffset(int measureWidth, int measureHeight, int xAixsStepWidth) {
 
         //计算Y轴的X偏移量
-        for (AixsPoint yaisPoint : yAixsPoints) {
-            Rect rect = new Rect();
-            aixsTitlePaint.setColor(yAixsTitleColor);
-            aixsTitlePaint.setTextSize(yAixsTitleSize);
-            aixsTitlePaint.getTextBounds(yaisPoint.getTitle(), 0, yaisPoint.getTitle().length(), rect);
-            int offset = xAixsPostion == AIXS_RIGHT ? measureWidth - rect.width() - getPaddingRight() : rect.width() + getPaddingLeft();
-            if (xAixsPostion == AIXS_RIGHT) {
-                if (xAixsOffset == 0 || xAixsOffset > offset - yAixsPaddingLeft - yAixsPaddingRight)
-                    xAixsOffset = offset - yAixsPaddingLeft - yAixsPaddingRight;
-            } else {
-                if (xAixsOffset < offset + yAixsPaddingLeft + yAixsPaddingRight)
-                    xAixsOffset = offset + yAixsPaddingLeft + yAixsPaddingRight;
+        if (hideYAixsTitles) {
+            xAixsOffset = yAixsPostion == AIXS_RIGHT ? measureWidth - getPaddingRight() - xAixsStepWidth / 2 : getPaddingLeft() + xAixsStepWidth / 2;
+        } else {
+            for (AixsPoint yaisPoint : yAixsPoints) {
+                Rect rect = new Rect();
+                aixsTitlePaint.setColor(ca.getyAixsTitleColor());
+                aixsTitlePaint.setTextSize(ca.getyAixsTitleSize());
+                aixsTitlePaint.getTextBounds(yaisPoint.getTitle(), 0, yaisPoint.getTitle().length(), rect);
+                int offset = yAixsPostion == AIXS_RIGHT ? measureWidth - rect.width() - getPaddingRight() : rect.width() + getPaddingLeft();
+                if (yAixsPostion == AIXS_RIGHT) {
+                    if (xAixsOffset == 0 || xAixsOffset > offset - ca.getyAixsPaddingLeft() - ca.getyAixsPaddingRight())
+                        xAixsOffset = offset - ca.getyAixsPaddingLeft() - ca.getyAixsPaddingRight();
+                } else {
+                    if (xAixsOffset < offset + ca.getyAixsPaddingLeft() + ca.getyAixsPaddingRight())
+                        xAixsOffset = offset + ca.getyAixsPaddingLeft() + ca.getyAixsPaddingRight();
+                }
             }
         }
 
         //计算X轴的Y偏移量
         for (AixsPoint xaisPoint : xAixsPoints) {
             Rect rect = new Rect();
-            aixsTitlePaint.setColor(xAixsTitleColor);
-            aixsTitlePaint.setTextSize(xAixsTitleSize);
+            aixsTitlePaint.setColor(ca.getxAixsTitleColor());
+            aixsTitlePaint.setTextSize(ca.getxAixsTitleSize());
             aixsTitlePaint.getTextBounds(xaisPoint.getTitle(), 0, xaisPoint.getTitle().length(), rect);
-            int offset = yAixsPostion == AIXS_TOP ? getPaddingTop() + rect.height() : measureHeight - rect.height() - getPaddingBottom();
-            if (yAixsPostion == AIXS_TOP) {
-                if (yAixsOffset < offset + xAixsPaddingTop + xAixsPaddingBottom)
-                    yAixsOffset = offset + xAixsPaddingTop + xAixsPaddingBottom;
+            int offset = xAixsPostion == AIXS_TOP ? getPaddingTop() + rect.height() : measureHeight - rect.height() - getPaddingBottom();
+            if (xAixsPostion == AIXS_TOP) {
+                if (yAixsOffset < offset + ca.getxAixsPaddingTop() + ca.getxAixsPaddingBottom())
+                    yAixsOffset = offset + ca.getxAixsPaddingTop() + ca.getxAixsPaddingBottom();
             } else {
-                if (yAixsOffset == 0 || yAixsOffset > offset - xAixsPaddingTop - xAixsPaddingBottom)
-                    yAixsOffset = offset - xAixsPaddingTop - xAixsPaddingBottom;
+                if (yAixsOffset == 0 || yAixsOffset > offset - ca.getxAixsPaddingTop() - ca.getxAixsPaddingBottom())
+                    yAixsOffset = offset - ca.getxAixsPaddingTop() - ca.getxAixsPaddingBottom();
+            }
+        }
+
+    }
+
+    /**
+     * 更新和计算每条折线的位置
+     */
+    public void updateChartLinePos() {
+        for (ChartLine chartLine : chartLines) {
+            updateDataPointPos(chartLine.getDataPoints());
+        }
+    }
+
+    /**
+     * 更新和计算每个数据坐标的位置
+     *
+     * @param dataPoints 数据坐标集
+     */
+    public void updateDataPointPos(List<DataAixsPoint> dataPoints) {
+        int ylastCenterY = yAixsPoints.get(yAixsPoints.size() - 1).getCenterY();
+        int yfristCenterY = yAixsPoints.get(0).getCenterY();
+        if (dataPoints.size() > 0 && xAixsPoints.size() >= dataPoints.size()) {
+            for (int index = 0; index < dataPoints.size(); index++) {
+                DataAixsPoint dataPoint = dataPoints.get(index);
+                AixsPoint xPoint = serachAixs(dataPoint, xAixsPoints);
+                if (xPoint == null) xPoint = xAixsPoints.get(index);
+                dataPoint.setCenterX(xPoint.getCenterX());
+                dataPoint.setCenterY(calculateCenterY(yfristCenterY, ylastCenterY, dataPoint.getAixsVal()));
             }
         }
     }
 
     /**
-     * 更新数据集中每个点的位置
+     * 计算X轴的步骤长
      */
-    public void updateDataPointPos() {
-        int ylastCenterY = yAixsPoints.get(yAixsPoints.size() - 1).getCenterY();
-        int yfristCenterY = yAixsPoints.get(0).getCenterY();
-        int yAixsDff = Math.abs(ylastCenterY - yfristCenterY);
-        if (dataPoints.size() > 0 && xAixsPoints.size() == dataPoints.size()) {
-            for (int index = 0; index < dataPoints.size(); index++) {
-                DataAixsPoint dataPoint = dataPoints.get(index);
-                AixsPoint xPoint = xAixsPoints.get(index);
-                dataPoint.setCenterX(xPoint.getCenterX());
-                int top_centerY = (int) (yfristCenterY + dataPoint.getAixsVal() * yAixsDff / maxYAixsVal);
-                int bottom_centerY = (int) (ylastCenterY + yAixsDff - dataPoint.getAixsVal() * yAixsDff / maxYAixsVal);
-                dataPoint.setCenterY(yAixsPostion == AIXS_TOP ? top_centerY : bottom_centerY);
+    public int calculateXAixsStep(int measureWidth, int maxyAuxAixsTitleWidth) {
+        if (hideYAixsTitles)
+            return measureWidth / xAixsPoints.size();
+        AixsPoint lastPoit = xAixsPoints.get(0);
+        Rect rect = new Rect();
+        aixsTitlePaint.setColor(ca.getxAixsTitleColor());
+        aixsTitlePaint.setTextSize(ca.getxAixsTitleSize());
+        aixsTitlePaint.getTextBounds(lastPoit.getTitle(), 0, lastPoit.getTitle().length(), rect);
+        return (measureWidth - rect.width() / 2 - (showYAuxAixsTitles ? maxyAuxAixsTitleWidth + ca.getyAixsPaddingRight() + ca.getyAixsPaddingLeft() - rect.width() / 2 : 0) - getPaddingRight() - getPaddingLeft()) / xAixsPoints.size();
+
+    }
+
+    /**
+     * 计算标题文本当中的最大文本宽度
+     */
+    public int calculateMaxTitleWidth(List<AixsPoint> aixsPoints) {
+        int maxWidth = 0;
+        for (AixsPoint aixsPoint : aixsPoints) {
+            Rect rect = new Rect();
+            aixsTitlePaint.setColor(ca.getyAixsTitleColor());
+            aixsTitlePaint.setTextSize(ca.getyAixsTitleSize());
+            aixsTitlePaint.getTextBounds(aixsPoint.getTitle(), 0, aixsPoint.getTitle().length(), rect);
+            if (maxWidth < rect.width()) {
+                maxWidth = rect.width();
             }
         }
+        return maxWidth;
+    }
+
+    /**
+     * 计算出每个节点在视图中Y轴的坐标
+     *
+     * @param yAixsFristCenterY Y轴的第一个节点(坐标轴起点)
+     * @param yAixsLastCenterY  Y轴的最后一个节点
+     * @param aixsVal           数据的数值
+     * @return 根据数据的数值转化成对应的视图中Y轴的坐标
+     */
+    public int calculateCenterY(int yAixsFristCenterY, int yAixsLastCenterY, double aixsVal) {
+        int yAixsDff = Math.abs(yAixsLastCenterY - yAixsFristCenterY);
+        int top_centerY = (int) (yAixsFristCenterY + aixsVal * yAixsDff / maxYAixsVal);
+        int bottom_centerY = (int) (yAixsLastCenterY + yAixsDff - aixsVal * yAixsDff / maxYAixsVal);
+        return xAixsPostion == AIXS_TOP ? top_centerY : bottom_centerY;
+    }
+
+    /**
+     * 检查是否X轴上对应的坐标
+     *
+     * @param dataPoint  目标数据坐标
+     * @param aixsPoints X轴上的所有坐标
+     * @return
+     */
+    public AixsPoint serachAixs(DataAixsPoint dataPoint, List<AixsPoint> aixsPoints) {
+        for (AixsPoint aixsPoint : aixsPoints) {
+            if (!TextUtils.isEmpty(dataPoint.getxAixsTitle()) &&
+                    aixsPoint.getTitle().hashCode() == dataPoint.getxAixsTitle().hashCode()) {
+                return aixsPoint;
+            }
+        }
+        return null;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        drawXAixs(canvas);
-        drawGridLine(canvas);
-        drawDataPoint(canvas);
+        if (xAixsPoints.size() > 0 && yAixsPoints != null && yAixsPoints.size() > 0) {
+            drawAixs(canvas);
+            drawGridLine(canvas);
+            drawChartLines(canvas);
+            drawStandardLine(canvas);
+            drawTouchLine(canvas);
+        }
     }
 
     /**
      * 绘制坐标系
      */
-    public void drawXAixs(Canvas canvas) {
+    public void drawAixs(Canvas canvas) {
 
-        if(dataPoints.size()<=0) return;
+        if (xAixsPoints.size() <= 0 || yAixsPoints.size() <= 0) return;
 
-        aixsTitlePaint.setColor(xAixsTitleColor);
-        aixsTitlePaint.setTextSize(xAixsTitleSize);
-        for (AixsPoint xaisPoint : xAixsPoints) {
-            drawAixsPoint(xaisPoint, canvas, aixsTitlePaint);
+        aixsTitlePaint.setColor(ca.getxAixsTitleColor());
+        aixsTitlePaint.setTextSize(ca.getxAixsTitleSize());
+
+        drawAixsPoints(canvas, xAixsPoints, aixsTitlePaint);
+
+        if (!hideYAixsTitles) {
+            aixsTitlePaint.setColor(ca.getyAixsTitleColor());
+            aixsTitlePaint.setTextSize(ca.getyAixsTitleSize());
+
+            drawAixsPoints(canvas, yAixsPoints, aixsTitlePaint);
+
+            if (showYAuxAixsTitles) {
+                drawAixsPoints(canvas, yAuxAixsPoints, aixsTitlePaint);
+            }
         }
 
-        aixsTitlePaint.setColor(yAixsTitleColor);
-        aixsTitlePaint.setTextSize(yAixsTitleSize);
-        for (AixsPoint yaisPoint : yAixsPoints) {
-            drawAixsPoint(yaisPoint, canvas, aixsTitlePaint);
+        if (!showHorGridLine) {
+            //绘制Y轴
+            aixsPaint.setColor(ca.getyAixsColor());
+            aixsPaint.setStrokeWidth(ca.getyAixsWidth());
+            AixsPoint lastYPoint = yAixsPoints.get(yAixsPoints.size() - 1);
+            int targetY = xAixsPostion == AIXS_TOP ? (lastYPoint.getCenterY() + (isAixsLineAlign ? 0 : getHeight() / 2)) : (isAixsLineAlign ? lastYPoint.getCenterY() : 0);
+            canvas.drawLine(xAixsOffset, yAixsOffset, xAixsOffset, targetY, aixsPaint);
+
+            //Log.i(TAG, "Y轴（" + xAixsOffset + "," + yAixsOffset + ")-(" + xAixsOffset + "," + targetY + ")");
         }
 
-        //绘制Y轴
-        aixsPaint.setColor(yAixsColor);
-        int targetY = yAixsPostion == AIXS_TOP ? (yAixsPoints.get(yAixsPoints.size() - 1).getCenterY() + getHeight() / 2) : 0;
-        canvas.drawLine(xAixsOffset, yAixsOffset, xAixsOffset, targetY, aixsPaint);
         //绘制X轴
-        aixsPaint.setColor(xAixsColor);
-        int startX = xAixsPostion == AIXS_RIGHT ? 0 : xAixsOffset;
-        int targetX = xAixsPostion == AIXS_RIGHT ? xAixsOffset : getWidth();
+        aixsPaint.setColor(ca.getxAixsColor());
+        aixsPaint.setStrokeWidth(ca.getxAixsWidth());
+        AixsPoint lastXPoint = xAixsPoints.get(xAixsPoints.size() - 1);
+        int startX = yAixsPostion == AIXS_RIGHT ? (isAixsLineAlign ? lastXPoint.getCenterX() : 0) : xAixsOffset;
+        int targetX = yAixsPostion == AIXS_RIGHT ? xAixsOffset : (isAixsLineAlign ? lastXPoint.getCenterX() : getWidth());
         canvas.drawLine(startX, yAixsOffset, targetX, yAixsOffset, aixsPaint);
+
+        //Log.i(TAG, "X轴（" + startX + "," + yAixsOffset + ")-(" + targetX + "," + yAixsOffset + ")");
     }
 
     /**
      * 绘制网格线
-     *
-     * @param canvas
      */
     public void drawGridLine(Canvas canvas) {
 
-        if (showVerGridLine&&xAixsPoints.size()>0) {
+        if (showVerGridLine && xAixsPoints.size() > 0) {
             //绘制Y轴的网格线
-            linePaint.setColor(horLineColor);
+            linePaint.setColor(ca.getHorLineColor());
+            linePaint.setStrokeWidth(ca.getLineWidth());
             for (AixsPoint xaisPoint : xAixsPoints) {
                 canvas.drawLine(xaisPoint.getCenterX(), yAixsPoints.get(0).getCenterY(), xaisPoint.getCenterX(), yAixsPoints.get(yAixsPoints.size() - 1).getCenterY(), linePaint);
             }
         }
 
-        if (showHorGridLine&&yAixsPoints.size()>0) {
+        if (showHorGridLine && yAixsPoints.size() > 0) {
             //绘制X轴的网格线
-            linePaint.setColor(verLineColor);
+            linePaint.setColor(ca.getVerLineColor());
             for (AixsPoint yaisPoint : yAixsPoints) {
                 canvas.drawLine(xAixsPoints.get(0).getCenterX(), yaisPoint.getCenterY(), xAixsPoints.get(xAixsPoints.size() - 1).getCenterX(), yaisPoint.getCenterY(), linePaint);
             }
@@ -406,7 +508,115 @@ public class LineChartView extends View {
     }
 
     /**
-     * 绘制坐标轴标题节点
+     * 绘制所有的折线
+     */
+    public void drawChartLines(Canvas canvas) {
+        for (ChartLine chartLine : chartLines) {
+            drawDataPoint(canvas, chartLine);
+        }
+    }
+
+    /**
+     * 绘制指定的标准线
+     */
+    public void drawStandardLine(Canvas canvas) {
+
+        int standardLineY = 0;
+        if (showStandardLine && ca.getStandardLineWidth() > 0) {
+            Path linePath = new Path();
+            standardLineY = calculateCenterY(yAixsPoints.get(0).getCenterY(), yAixsPoints.get(yAixsPoints.size() - 1).getCenterY(), standardAixsVal);
+            linePath.moveTo(xAixsPoints.get(0).getCenterX(), standardLineY);
+            linePath.lineTo(xAixsPoints.get(xAixsPoints.size() - 1).getCenterX(), standardLineY);
+            pathStrokePaint.setStyle(Paint.Style.STROKE);
+            pathStrokePaint.setColor(ca.getStandardLineColor());
+            pathStrokePaint.setStrokeWidth(ca.getStandardLineWidth());
+            pathStrokePaint.setPathEffect(standardLineStyle == SOLID ? null : new DashPathEffect(new float[]{dashVal, dashVal}, 1));
+            canvas.drawPath(linePath, pathStrokePaint);
+        }
+
+        if (showStandardLine && showStandardVal) {
+            Rect rect = new Rect();
+            String valStr = String.valueOf(standardAixsVal);
+            aixsTitlePaint.setColor(ca.getStandardValColor());
+            aixsTitlePaint.setTextSize(ca.getStandardValSize());
+            aixsTitlePaint.getTextBounds(valStr, 0, valStr.length(), rect);
+            if (Math.abs(standardLineY - yAixsPoints.get(yAixsPoints.size() - 1).getCenterY()) > rect.height() + ca.getStandardValMargin()) {
+                int centerLeftX = (xAixsPoints.get(xAixsPoints.size() - 1).getCenterX() - xAixsOffset) / 2 + xAixsOffset;
+                int centerRightY = (xAixsOffset - xAixsPoints.get(xAixsPoints.size() - 1).getCenterX()) / 2 + xAixsPoints.get(xAixsPoints.size() - 1).getCenterX();
+                int centerY = xAixsPostion == AIXS_BUTTOM ? standardLineY - ca.getStandardValMargin() - rect.height() / 2 : standardLineY + ca.getStandardValMargin() + rect.height() / 2;
+                AixsPoint tipPoint = new AixsPoint();
+                tipPoint.setTitle(valStr);
+                tipPoint.setCenterY(centerY);
+                tipPoint.setCenterX(yAixsPostion == AIXS_LEFT ? centerLeftX : centerRightY);
+                tipPoint.setTitleWidth(rect.width());
+                tipPoint.setTitleHeight(rect.height());
+                drawAixsPoint(tipPoint, canvas, aixsTitlePaint);
+            } else {
+                Log.i(TAG, "标准线与顶部空间不足,无法绘制指定值提示语");
+            }
+        }
+    }
+
+    /**
+     * 绘制数据节点
+     */
+    public void drawDataPoint(Canvas canvas, ChartLine chartLine) {
+
+        if (chartLine == null || chartLine.getDataPoints().size() == 0) return;
+
+        pathPaint.setColor(chartLine.getFillColor());
+        pathStrokePaint.setColor(chartLine.getLineColor());
+        pathStrokePaint.setPathEffect(chartLine.getDrawModel() == STROKE_DASH ? new DashPathEffect(new float[]{dashVal, dashVal}, 1) : null);
+        pathStrokePaint.setStrokeWidth(chartLine.getLineWidth());
+
+
+        List<DataAixsPoint> dataPoints = chartLine.getDataPoints();
+
+        Path path = new Path();
+        Path strokePath = new Path();
+        DataAixsPoint frstData = dataPoints.get(0);
+        int tempFristCenterX = 0;
+        if (frstData.getCenterX() == xAixsPoints.get(0).getCenterX()) {
+            tempFristCenterX = xAixsPostion == AIXS_RIGHT ? frstData.getCenterX() - ca.getyAixsWidth() : frstData.getCenterX() + ca.getyAixsWidth();
+        } else {
+            tempFristCenterX = frstData.getCenterX();
+        }
+        path.moveTo(tempFristCenterX, frstData.getCenterY());
+        strokePath.moveTo(tempFristCenterX, frstData.getCenterY());
+        for (int index = 1; index < dataPoints.size(); index++) {
+            DataAixsPoint datapoint = dataPoints.get(index);
+            path.lineTo(datapoint.getCenterX(), datapoint.getCenterY());
+            if (chartLine.getDrawModel() == STROKE)
+                strokePath.lineTo(datapoint.getCenterX(), datapoint.getCenterY());
+            else
+                strokePath.lineTo(datapoint.getCenterX(), yAixsPostion == AIXS_TOP ? datapoint.getCenterY() + chartLine.getLineWidth() : datapoint.getCenterY() - chartLine.getLineWidth());
+        }
+
+        if (chartLine.getDrawModel() == STROKE || chartLine.getDrawModel() == STROKE_DASH) {
+            canvas.drawPath(strokePath, pathStrokePaint);
+        } else {
+            DataAixsPoint lastData = dataPoints.get(dataPoints.size() - 1);
+            int tempYAixsOffset = yAixsPostion == AIXS_TOP ? yAixsOffset + ca.getxAixsWidth() : yAixsOffset - ca.getxAixsWidth();
+            path.lineTo(lastData.getCenterX(), tempYAixsOffset);
+            path.lineTo(tempFristCenterX, tempYAixsOffset);
+            path.lineTo(tempFristCenterX, frstData.getCenterY());
+            canvas.drawPath(path, pathPaint);
+            if (chartLine.getDrawModel() == FILL_STROKE)
+                canvas.drawPath(strokePath, pathStrokePaint);
+        }
+    }
+
+    /**
+     * 绘制坐标轴标题节点集合
+     */
+    public void drawAixsPoints(Canvas canvas, List<AixsPoint> aisPoints, Paint paint) {
+        for (AixsPoint yaisPoint : aisPoints) {
+            drawAixsPoint(yaisPoint, canvas, paint);
+        }
+    }
+
+    /**
+     * 绘制单个坐标轴标题节点
      */
     public void drawAixsPoint(AixsPoint aisPoint, Canvas canvas, Paint paint) {
         Rect targetRect = new Rect();
@@ -423,120 +633,86 @@ public class LineChartView extends View {
     }
 
     /**
-     * 绘制数据节点
+     * 更新触摸对应的指示线
      */
-    public void drawDataPoint(Canvas canvas) {
-
-        if(dataPoints.size()==0) return ;
-
-        Path path = new Path();
-        Path strokePath = new Path();
-        DataAixsPoint frstData = dataPoints.get(0);
-        int tempFristCenterX=xAixsPostion == AIXS_RIGHT ?frstData.getCenterX()-aixsWidth:frstData.getCenterX()+aixsWidth;
-        path.moveTo(tempFristCenterX, frstData.getCenterY());
-        strokePath.moveTo(tempFristCenterX, frstData.getCenterY());
-        for (int index = 1; index < dataPoints.size(); index++) {
-            DataAixsPoint datapoint = dataPoints.get(index);
-            path.lineTo(datapoint.getCenterX(), datapoint.getCenterY());
-            if (pathModel == PATH_STROKE)
-                strokePath.lineTo(datapoint.getCenterX(), datapoint.getCenterY());
-            else
-                strokePath.lineTo(datapoint.getCenterX(), yAixsPostion == AIXS_TOP ? datapoint.getCenterY() + pathStrokeWidth : datapoint.getCenterY() - pathStrokeWidth);
+    public void drawTouchLine(Canvas canvas) {
+        if (downX > 0 && downY > 0) {
+            linePaint.setColor(ca.getTouchLineColor());
+            linePaint.setStrokeWidth(ca.getTouchLineWidth());
+            int startX=downX - ca.getTouchLineWidth() / 2;
+            int stratY=yAixsPoints.get(0).getCenterY()-ca.getxAixsWidth()/2;
+            int stopY=yAixsPoints.get(yAixsPoints.size() - 1).getCenterY()-ca.getxAixsWidth()/2;
+            canvas.drawLine(startX, stratY, startX, stopY, linePaint);
+            //辅助Y轴的水平指示线待定
+        }else{
+            //待定清除手指抬起来的指示线
+//            if(downX!=-1&&downY!=-1){
+//                downX=-1;
+//                downY=-1;
+//                invalidate();
+//            }
         }
+    }
 
-        if (pathModel == PATH_STROKE) {
-            canvas.drawPath(strokePath, pathStrokePaint);
+    int downX;
+    int downY;
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (disableTouch) {
+            return false;
         } else {
-            DataAixsPoint lastData = dataPoints.get(dataPoints.size() - 1);
-            int tempYAixsOffset=yAixsPostion == AIXS_TOP ?yAixsOffset+aixsWidth:yAixsOffset-aixsWidth;
-            path.lineTo(lastData.getCenterX(), tempYAixsOffset);
-            path.lineTo(tempFristCenterX, tempYAixsOffset);
-            path.lineTo(tempFristCenterX, frstData.getCenterY());
-            canvas.drawPath(path, pathPaint);
-            if (pathModel == PATH_FILL_STROKE)
-                canvas.drawPath(strokePath, pathStrokePaint);
+            if (inRange(event.getAction(), MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE)) {
+                downX = (int) event.getX();
+                downY = (int) event.getY();
+            } else if (inRange(event.getAction(), MotionEvent.ACTION_UP)) {
+                downX = 0;
+                downY = 0;
+            }
+            Log.i(TAG,"downX="+downX+" ; downY="+downY);
+            boolean touchInAixs = isTouchInAixs(downX, downY);
+            if (touchInAixs){
+                //计算用户指示触摸
+                invalidate();
+            }
+            return touchInAixs;
         }
     }
 
     /**
-     * 坐标系点坐标实体
+     * 检查触摸点是否处理坐标系里
      */
-    public static class AixsPoint {
-        //中心X坐标
-        private int centerX;
-        //中心Y坐标
-        private int centerY;
-        //标题文本的宽度
-        private int titleWidth;
-        //标题文本的高度
-        private int titleHeight;
-        //标题文本
-        private String title;
-
-        public int getCenterX() {
-            return centerX;
-        }
-
-        public void setCenterX(int centerX) {
-            this.centerX = centerX;
-        }
-
-        public int getCenterY() {
-            return centerY;
-        }
-
-        public void setCenterY(int centerY) {
-            this.centerY = centerY;
-        }
-
-        public int getTitleWidth() {
-            return titleWidth;
-        }
-
-        public void setTitleWidth(int titleWidth) {
-            this.titleWidth = titleWidth;
-        }
-
-        public int getTitleHeight() {
-            return titleHeight;
-        }
-
-        public void setTitleHeight(int titleHeight) {
-            this.titleHeight = titleHeight;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
+    public boolean isTouchInAixs(int touchX, int touchY) {
+        boolean inX = yAixsPostion == AIXS_LEFT ? inXAixs(touchX, 0, xAixsPoints.size() - 1) : inXAixs(touchX, xAixsPoints.size() - 1, 0);
+        boolean inY = xAixsPostion == AIXS_TOP ? inYAixs(touchY, 0, yAixsPoints.size() - 1) : inYAixs(touchY, yAixsPoints.size() - 1, 0);
+        return inX && inY;
     }
 
-    /**
-     * 坐标系点数据基类实体
-     */
-    public static class DataAixsPoint extends AixsPoint {
-        //对应的轴数值
-        private double aixsVal;
+    public boolean inXAixs(int touchX, int startIndex, int endIndex) {
+        return touchX > xAixsPoints.get(startIndex).getCenterX() && touchX < xAixsPoints.get(endIndex).getCenterX();
+    }
 
-        public double getAixsVal() {
-            return aixsVal;
-        }
+    public boolean inYAixs(int touchY, int startIndex, int endIndex) {
+        return touchY > yAixsPoints.get(startIndex).getCenterY() && touchY < yAixsPoints.get(endIndex).getCenterY();
+    }
 
-        public void setAixsVal(double aixsVal) {
-            this.aixsVal = aixsVal;
+    public boolean inRange(int curAct, int... actions) {
+
+        for (int index = 0; index < actions.length; index++) {
+            if (curAct == actions[index])
+                return true;
         }
+        return false;
     }
 
     /**
      * 更新X轴的标题
+     *
      * @param titles 标题集合
      */
-    public LineChartView updateXAixsTitles(List<String> titles){
+    public LineChartView updateXAixsTitles(List<String> titles) {
         xAixsPoints.clear();
-        for (String title:titles) {
+        for (String title : titles) {
             AixsPoint aixsPoint = new AixsPoint();
             aixsPoint.setTitle(title);
             xAixsPoints.add(aixsPoint);
@@ -545,36 +721,142 @@ public class LineChartView extends View {
     }
 
     /**
-     *
-     * @param maxYAixsVal Y轴的最大值
+     * @param maxYAixsVal   Y轴的最大值
      * @param yAixsStepSize Y轴的步值个数
      */
-    public LineChartView updateYAixsTitles(double maxYAixsVal,int yAixsStepSize){
-        this.maxYAixsVal=maxYAixsVal;
-        this.yAixsStepSize=yAixsStepSize;
+    public LineChartView updateYAixsTitles(double maxYAixsVal, int yAixsStepSize) {
+        this.maxYAixsVal = maxYAixsVal;
+        this.yAixsStepSize = yAixsStepSize;
         return this;
     }
 
-    /**
-     * 更新数据集合
-     * @param dataPoints 要显示的数据集
-     */
-    public LineChartView updateDataPoints(List<DataAixsPoint> dataPoints){
-        this.dataPoints=dataPoints;
+    public LineChartView updateYAuxAixsTitles(double maxYAuxAixsVal) {
+        this.maxYAuxAixsVal = maxYAuxAixsVal;
+        return this;
+    }
+
+    public LineChartView addChartLine(ChartLine chartLine) {
+        if (chartLine != null)
+            this.chartLines.add(chartLine);
         return this;
     }
 
     /**
      * 更新操作
      */
-    public void drawToUpdate(){
+    public void drawToUpdate() {
+        xAixsOffset = 0;
+        yAixsOffset = 0;
         requestLayout();
     }
 
-    public static double douFormat(double value,int digit){
-        NumberFormat format=NumberFormat.getNumberInstance();
-        format.setMaximumFractionDigits(digit);
-        return Double.parseDouble(format.format(value).replace(",",""));
+    /**
+     * 清除旧的折线数据集
+     */
+    public void cleanOldLines() {
+        if (chartLines.size() > 0)
+            chartLines.clear();
     }
+
+    public void setShowVerGridLine(boolean showVerGridLine) {
+        this.showVerGridLine = showVerGridLine;
+    }
+
+    public void setShowHorGridLine(boolean showHorGridLine) {
+        this.showHorGridLine = showHorGridLine;
+    }
+
+    public void setAixsLineAlign(boolean aixsLineAlign) {
+        isAixsLineAlign = aixsLineAlign;
+    }
+
+    public void setHideYAixsTitles(boolean hideYAixsTitles) {
+        this.hideYAixsTitles = hideYAixsTitles;
+    }
+
+    public int getxAixsPostion() {
+        return xAixsPostion;
+    }
+
+    public void setxAixsPostion(int xAixsPostion) {
+        this.xAixsPostion = xAixsPostion;
+    }
+
+    public int getyAixsPostion() {
+        return yAixsPostion;
+    }
+
+    public void setyAixsPostion(int yAixsPostion) {
+        this.yAixsPostion = yAixsPostion;
+    }
+
+    public boolean isShowStandardLine() {
+        return showStandardLine;
+    }
+
+    public void setShowStandardLine(boolean showStandardLine) {
+        this.showStandardLine = showStandardLine;
+    }
+
+    public int getStandardLineStyle() {
+        return standardLineStyle;
+    }
+
+    public void setStandardLineStyle(int standardLineStyle) {
+        this.standardLineStyle = standardLineStyle;
+    }
+
+    public int getStandardAixsVal() {
+        return standardAixsVal;
+    }
+
+    public void setStandardAixsVal(int standardAixsVal) {
+        this.standardAixsVal = standardAixsVal;
+    }
+
+    public int getDashVal() {
+        return dashVal;
+    }
+
+    public ChartAttrs getChartAttrs() {
+        return ca;
+    }
+
+    public void setChartAttrs(ChartAttrs ca) {
+        this.ca = ca;
+    }
+
+    public void setDashVal(int dashVal) {
+        this.dashVal = dashVal;
+    }
+
+    public boolean isShowStandardVal() {
+        return showStandardVal;
+    }
+
+    public void setShowStandardVal(boolean showStandardVal) {
+        this.showStandardVal = showStandardVal;
+    }
+
+    public boolean isShowYAuxAixsTitles() {
+        return showYAuxAixsTitles;
+    }
+
+    public void setShowYAuxAixsTitles(boolean showYAuxAixsTitles) {
+        this.showYAuxAixsTitles = showYAuxAixsTitles;
+    }
+
+    public onTouchAixsDataListener getListener() {
+        return listener;
+    }
+
+    public void setListener(onTouchAixsDataListener listener) {
+        this.listener = listener;
+    }
+
+    public static interface onTouchAixsDataListener {
+        void onTouchAixsData(int xAixsTitle, int yAixsTitle, int yAuxAixsTitle);
+    }
+
 
 }
