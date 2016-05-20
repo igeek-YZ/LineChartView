@@ -6,7 +6,7 @@
 
 #### 效果图        
 
-<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/linechatview.gif" width = "539" height = "546" alt="960" align=center />
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/linechatview.gif" width = "390" height = "698" alt="960" align=center />
 
 
 
