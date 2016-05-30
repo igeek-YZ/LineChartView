@@ -18,6 +18,7 @@ public class ChartLine  {
     //绘制的模式
     private int drawModel;
 
+
     public List<DataAixsPoint> getDataPoints() {
         return dataPoints;
     }

@@ -1,9 +1,9 @@
 package com.igeek.linechartview;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.widget.RadioGroup;
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     LineChartView chatView;
 
@@ -22,8 +22,8 @@ public class MainActivity extends AppCompatActivity {
     RadioGroup xAixsPos;
     RadioGroup lineModel;
     RadioGroup gridLines;
-    RadioGroup standardLine;
     RadioGroup standardLineStyle;
+    RadioGroup pathPointToYAixsPosion;
 
     ChartLine chartLine;
 
@@ -38,12 +38,12 @@ public class MainActivity extends AppCompatActivity {
         xAixsPos= (RadioGroup) findViewById(R.id.xAixsPos);
         lineModel= (RadioGroup) findViewById(R.id.lineModel);
         gridLines= (RadioGroup) findViewById(R.id.gridLines);
-        standardLine= (RadioGroup) findViewById(R.id.standardLine);
         standardLineStyle= (RadioGroup) findViewById(R.id.standardLineStyle);
+        pathPointToYAixsPosion= (RadioGroup) findViewById(R.id.pathPointToYAixsPosion);
 
         chartLine=demo1Line();
 
-        standardLine.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        pathPointToYAixsPosion.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 checkChecked();
@@ -127,23 +127,25 @@ public class MainActivity extends AppCompatActivity {
             showVerGridLine=true;
         }
 
-        boolean showStandardLine=standardLine.getCheckedRadioButtonId()==R.id.standardLine_show;
+        boolean showStandardLine=standardLineStyle.getCheckedRadioButtonId()!=R.id.standardLine_hide;
         int standardLinestyle=standardLineStyle.getCheckedRadioButtonId()==R.id.standardLine_dash?LineChartView.DASH:LineChartView.SOLID;
 
+        boolean touchDisable=pathPointToYAixsPosion.getCheckedRadioButtonId()==R.id.pathPointToYAixsPosion_disabled;
+        int pointToYAixsPosion=pathPointToYAixsPosion.getCheckedRadioButtonId()==R.id.pathPointToYAixsPosion_left?LineChartView.AIXS_LEFT:LineChartView.AIXS_RIGHT;
+
         updateChartView(hideYAixsTitles,yaixsPos,xaixsPos,drawModel,
-                showHorGridLine,showVerGridLine,showStandardLine,standardLinestyle,showYAuxAixsTitles);
+                showHorGridLine,showVerGridLine,showStandardLine,standardLinestyle,showYAuxAixsTitles,touchDisable,pointToYAixsPosion);
     }
 
     public void updateChartView(boolean hideYAixsTitles,int yAixsPos,int xAixsPos,
         int drawModel,boolean showHorGridLine,boolean showVerGridLine,boolean showStandardLine,
-                                int standardLineStyle,boolean showYAuxAixsTitles){
+        int standardLineStyle,boolean showYAuxAixsTitles,boolean touchDisable,int pointToYAixsPosion){
 
         chartLine.setDrawModel(drawModel);
 
         chatView.getChartAttrs().setTouchLineColor(Color.parseColor("#fff000"));
         chatView.getChartAttrs().setTouchLineWidth(4);
 
-        chatView.cleanOldLines();
         chatView.setAixsLineAlign(true);
         chatView.setShowHorGridLine(showHorGridLine);
         chatView.setShowVerGridLine(showVerGridLine);
@@ -152,15 +154,20 @@ public class MainActivity extends AppCompatActivity {
         chatView.setyAixsPostion(yAixsPos);
         chatView.setxAixsPostion(xAixsPos);
         chatView.setShowStandardLine(showStandardLine);
-        chatView.setStandardLineStyle(standardLineStyle);
+        if(showStandardLine)
+            chatView.setStandardLineStyle(standardLineStyle);
         chatView.setShowStandardVal(true);
-
+        chatView.setDisableTouch(touchDisable);
+        if(!touchDisable)
+            chatView.setPathPointToYAixsPosion(pointToYAixsPosion);
+        chatView.cleanOldLines();
         chatView.setStandardAixsVal(60);
         chatView.updateYAixsTitles(100,5)
                 .updateYAuxAixsTitles(120)
                 .updateXAixsTitles(demoXAixsTitles())
                 .addChartLine(chartLine)
                 .drawToUpdate();
+//        chatView.invalidate();
     }
 
     public List<String> demoXAixsTitles() {

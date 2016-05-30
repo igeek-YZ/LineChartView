@@ -65,4 +65,13 @@ public class AixsPoint {
         }
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "AixsPoint{" +
+                "title='" + title + '\'' +
+                ", centerY=" + centerY +
+                ", centerX=" + centerX +
+                '}';
+    }
 }

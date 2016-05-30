@@ -55,7 +55,7 @@ public class LineChartView extends View implements View.OnTouchListener {
     private int yAixsOffset;
 
     //是否禁止触摸响应
-    private boolean disableTouch;
+    private boolean disableTouch=true;
     //是否显示垂直网格线
     private boolean showVerGridLine;
     //是否显示水平网格线
@@ -71,12 +71,14 @@ public class LineChartView extends View implements View.OnTouchListener {
     //是否显示指定标准值
     private boolean showStandardVal;
     //指定标准线的样式
-    private int standardLineStyle;
+    private int standardLineStyle=DASH;
 
     //x轴的位置 -top or bottom
-    private int xAixsPostion;
+    private int xAixsPostion=AIXS_BUTTOM;
     //y轴的位置 -left or right
-    private int yAixsPostion;
+    private int yAixsPostion=AIXS_LEFT;
+    //手指触摸Path路径上对应的点到垂直轴的指示先的方向(Y轴或辅助Y轴) --左边或者右边
+    private int pathPointToYAixsPosion=AIXS_LEFT;
 
     //double的精确度
     private int digit = 2;
@@ -604,6 +606,7 @@ public class LineChartView extends View implements View.OnTouchListener {
             if (chartLine.getDrawModel() == FILL_STROKE)
                 canvas.drawPath(strokePath, pathStrokePaint);
         }
+
     }
 
     /**
@@ -636,14 +639,26 @@ public class LineChartView extends View implements View.OnTouchListener {
      * 更新触摸对应的指示线
      */
     public void drawTouchLine(Canvas canvas) {
-        if (downX > 0 && downY > 0) {
+        if (downX > 0 && downY > 0&&xAixsPoints.size()>0) {
             linePaint.setColor(ca.getTouchLineColor());
             linePaint.setStrokeWidth(ca.getTouchLineWidth());
             int startX=downX - ca.getTouchLineWidth() / 2;
             int stratY=yAixsPoints.get(0).getCenterY()-ca.getxAixsWidth()/2;
             int stopY=yAixsPoints.get(yAixsPoints.size() - 1).getCenterY()-ca.getxAixsWidth()/2;
+            //绘制垂直指示线
             canvas.drawLine(startX, stratY, startX, stopY, linePaint);
-            //辅助Y轴的水平指示线待定
+            //绘制水平指示线到特定的方向(左边或者右边)
+            for(Double touchPathY:touchPathYs){
+                final int yVal=touchPathY.intValue();
+                int stopX=-1;
+                if(yAixsPostion==AIXS_LEFT){
+                    stopX=xAixsPoints.get(pathPointToYAixsPosion==AIXS_LEFT?0:xAixsPoints.size()-1).getCenterX();
+                }else if(yAixsPostion==AIXS_RIGHT){
+                    stopX=xAixsPoints.get(pathPointToYAixsPosion==AIXS_LEFT?xAixsPoints.size()-1:0).getCenterX();
+                }
+                if(stopX!=-1)
+                    canvas.drawLine(startX,yVal,stopX,yVal,linePaint);
+            }
         }else{
             //待定清除手指抬起来的指示线
 //            if(downX!=-1&&downY!=-1){
@@ -656,6 +671,7 @@ public class LineChartView extends View implements View.OnTouchListener {
 
     int downX;
     int downY;
+    List<Double> touchPathYs;
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -666,14 +682,17 @@ public class LineChartView extends View implements View.OnTouchListener {
                 downX = (int) event.getX();
                 downY = (int) event.getY();
             } else if (inRange(event.getAction(), MotionEvent.ACTION_UP)) {
-                downX = 0;
-                downY = 0;
+                downX = -1;
+                downY = -1;
+                touchPathYs=null;
             }
-            Log.i(TAG,"downX="+downX+" ; downY="+downY);
             boolean touchInAixs = isTouchInAixs(downX, downY);
-            if (touchInAixs){
+//            Log.i(TAG,"touchInAixs="+touchInAixs+" ;downX="+downX+" ; downY="+downY);
+            if (touchInAixs&&downX>0&&downY>0){
                 //计算用户指示触摸
-                invalidate();
+                touchPathYs=touchYsBelongToPath(downX);
+                if(touchPathYs.size()>0)
+                    invalidate();
             }
             return touchInAixs;
         }
@@ -686,6 +705,55 @@ public class LineChartView extends View implements View.OnTouchListener {
         boolean inX = yAixsPostion == AIXS_LEFT ? inXAixs(touchX, 0, xAixsPoints.size() - 1) : inXAixs(touchX, xAixsPoints.size() - 1, 0);
         boolean inY = xAixsPostion == AIXS_TOP ? inYAixs(touchY, 0, yAixsPoints.size() - 1) : inYAixs(touchY, yAixsPoints.size() - 1, 0);
         return inX && inY;
+    }
+
+    public List<Double> touchYsBelongToPath(int touchX){
+
+        List<Double> ys=new ArrayList<Double>();
+        for(ChartLine chartLine:chartLines){
+            double touchYInPathLine=getTouchYByAdjoin(touchX,chartLine.getDataPoints());
+            if(touchYInPathLine!=-1){
+                ys.add(touchYInPathLine);
+            }
+        }
+        return ys;
+    }
+
+    /**
+     * 计算得到用户手指获触摸所处当前坐标系的位置
+     */
+    public double getTouchYByAdjoin(int touchX,List<DataAixsPoint> dataPoints){
+
+        int sreachIndex=-1;
+
+        final int dataSize=dataPoints.size();
+
+        for(int index=0;index<dataSize;index++){
+            int checkIndex=yAixsPostion==AIXS_LEFT?index:dataSize-1-index;
+            if(touchX<=dataPoints.get(checkIndex).getCenterX()){
+                sreachIndex=checkIndex;
+                break;
+            }
+        }
+
+        if(yAixsPostion==AIXS_LEFT&&sreachIndex==0) return -1;
+        if(yAixsPostion==AIXS_RIGHT&&sreachIndex==dataSize-1) return -1;
+
+        AixsPoint two=dataPoints.get(sreachIndex);
+        AixsPoint one=dataPoints.get(yAixsPostion==AIXS_LEFT?sreachIndex-1:sreachIndex+1);
+
+//        Log.i(TAG,"TouchYByAdjoin -->one="+one.toString()+" ; two="+two.toString());
+
+        //计算斜线的K值 y=kx+b
+        double k=((double)(one.getCenterY()-two.getCenterY()))/(one.getCenterX()-two.getCenterX());
+        //计算斜线的b值 y=kx+b
+        double b=one.getCenterY()-one.getCenterX()*k;
+
+//        Log.i(TAG,"touchX="+touchX+" ; K="+k+" ; b="+b);
+
+
+        //求出touchy的位置
+        return k*touchX+b;
     }
 
     public boolean inXAixs(int touchX, int startIndex, int endIndex) {
@@ -748,6 +816,7 @@ public class LineChartView extends View implements View.OnTouchListener {
         xAixsOffset = 0;
         yAixsOffset = 0;
         requestLayout();
+        invalidate();
     }
 
     /**
@@ -756,6 +825,8 @@ public class LineChartView extends View implements View.OnTouchListener {
     public void cleanOldLines() {
         if (chartLines.size() > 0)
             chartLines.clear();
+        if(touchPathYs!=null&&touchPathYs.size()>0)
+            touchPathYs.clear();
     }
 
     public void setShowVerGridLine(boolean showVerGridLine) {
@@ -846,6 +917,22 @@ public class LineChartView extends View implements View.OnTouchListener {
         this.showYAuxAixsTitles = showYAuxAixsTitles;
     }
 
+    public int getPathPointToYAixsPosion() {
+        return pathPointToYAixsPosion;
+    }
+
+    public void setPathPointToYAixsPosion(int pathPointToYAixsPosion) {
+        this.pathPointToYAixsPosion = pathPointToYAixsPosion;
+    }
+
+    public boolean isDisableTouch() {
+        return disableTouch;
+    }
+
+    public void setDisableTouch(boolean disableTouch) {
+        this.disableTouch = disableTouch;
+    }
+
     public onTouchAixsDataListener getListener() {
         return listener;
     }
@@ -857,6 +944,4 @@ public class LineChartView extends View implements View.OnTouchListener {
     public static interface onTouchAixsDataListener {
         void onTouchAixsData(int xAixsTitle, int yAixsTitle, int yAuxAixsTitle);
     }
-
-
 }

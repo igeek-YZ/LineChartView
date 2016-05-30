@@ -55,39 +55,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp"
-                android:text="标准线是否显示"
-                android:textColor="@android:color/black"
-                android:textSize="16sp" />
-
-            <RadioGroup
-                android:id="@+id/standardLine"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp">
-
-                <RadioButton
-                    android:id="@+id/standardLine_show"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:checked="true"
-                    android:text="显示" />
-
-                <RadioButton
-                    android:id="@+id/standardLine_hide"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="隐藏" />
-
-            </RadioGroup>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="标准线样式"
                 android:textColor="@android:color/black"
                 android:textSize="16sp" />
@@ -99,6 +66,13 @@
                 android:orientation="horizontal"
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp">
+
+                <RadioButton
+                    android:id="@+id/standardLine_hide"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="隐藏" />
 
                 <RadioButton
                     android:id="@+id/standardLine_dash"
@@ -114,6 +88,46 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="实线" />
+
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="触摸指示线指向"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+
+            <RadioGroup
+                android:id="@+id/pathPointToYAixsPosion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+
+                <RadioButton
+                    android:checked="true"
+                    android:id="@+id/pathPointToYAixsPosion_disabled"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="禁止" />
+
+                <RadioButton
+                    android:id="@+id/pathPointToYAixsPosion_left"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="左边" />
+
+                <RadioButton
+                    android:id="@+id/pathPointToYAixsPosion_right"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="右边" />
 
             </RadioGroup>
 
@@ -326,7 +340,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="折线填充" />
+                    android:text="折填" />
 
                 <RadioButton
                     android:id="@+id/lineModel_fill"
