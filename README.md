@@ -4,9 +4,9 @@
 
 # 折线图，区域图 继承View绘制。
 
-#### 效果图        
-
-<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/linechatview.gif" width = "390" height = "698" alt="960" align=center />
+#### 效果图 
+       
+<img src="https://github.com/igeek-YZ/LineChartView/blob/master/pics/linechatview.gif" width = "742" height = "693" alt="960" align=center />
 
 
 
