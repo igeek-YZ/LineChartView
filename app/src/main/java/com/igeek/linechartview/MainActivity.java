@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.widget.RadioGroup;
 
@@ -98,7 +99,21 @@ public class MainActivity extends Activity {
                 checkChecked();
             }
         });
+        chatView.setListener(new LineChartView.onTouchAixsDataListener() {
+            @Override
+            public void onTouchAixsData(List<DataAixsPoint> aixsDatas) {
+                printLog(aixsDatas);
+            }
+        });
         checkChecked();
+    }
+
+    public void printLog(List<DataAixsPoint> aixsDatas){
+        StringBuffer buffer=new StringBuffer("触摸的Y轴值集 [ ");
+        for(DataAixsPoint aixsData:aixsDatas){
+            buffer.append(aixsData.getAixsVal()+" ,");
+        }
+        Log.i(MainActivity.class.getSimpleName(),buffer.deleteCharAt(buffer.length()-1).append(" ]").toString());
     }
 
     public void checkChecked(){

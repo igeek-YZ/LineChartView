@@ -691,8 +691,12 @@ public class LineChartView extends View implements View.OnTouchListener {
             if (touchInAixs&&downX>0&&downY>0){
                 //计算用户指示触摸
                 touchPathYs=touchYsBelongToPath(downX);
-                if(touchPathYs.size()>0)
+                if(touchPathYs.size()>0){
+                    if(listener!=null)
+                        notifyTouchToMonitor(touchPathYs,downX);
                     invalidate();
+                }
+
             }
             return touchInAixs;
         }
@@ -751,9 +755,39 @@ public class LineChartView extends View implements View.OnTouchListener {
 
 //        Log.i(TAG,"touchX="+touchX+" ; K="+k+" ; b="+b);
 
-
         //求出touchy的位置
         return k*touchX+b;
+    }
+
+    public void notifyTouchToMonitor(List<Double> touchPathYs,int touchX){
+        List<DataAixsPoint> datas=new ArrayList<DataAixsPoint>(0);
+        int ylastCenterY = yAixsPoints.get(yAixsPoints.size() - 1).getCenterY();
+        int yfristCenterY = yAixsPoints.get(0).getCenterY();
+        double maxYVal=0;
+        //计算当前指示线指向的Y轴对应的最大值
+        if(yAixsPostion==AIXS_LEFT)
+            maxYVal=pathPointToYAixsPosion==AIXS_LEFT?maxYAixsVal:maxYAuxAixsVal;
+        if(yAixsPostion==AIXS_RIGHT)
+            maxYVal=pathPointToYAixsPosion==AIXS_LEFT?maxYAuxAixsVal:maxYAixsVal;
+
+        for(Double touchPathY:touchPathYs){
+            final int touchY=touchPathY.intValue();
+            DataAixsPoint dataPoint=new DataAixsPoint();
+            double val=getYAixsValueByYAixs(touchY,maxYVal,ylastCenterY,yfristCenterY);
+            dataPoint.setAixsVal(val);
+            dataPoint.setCenterY(touchY);
+            dataPoint.setCenterX(touchX);
+            datas.add(dataPoint);
+        }
+
+        if(datas.size()>0){
+            if(listener!=null)
+                listener.onTouchAixsData(datas);
+        }
+    }
+
+    public double getYAixsValueByYAixs(int touchY,double maxYVal,int ylastCenterY,int yfristCenterY){
+        return Math.abs(touchY-yfristCenterY)*maxYVal/Math.abs(ylastCenterY - yfristCenterY);
     }
 
     public boolean inXAixs(int touchX, int startIndex, int endIndex) {
@@ -942,6 +976,7 @@ public class LineChartView extends View implements View.OnTouchListener {
     }
 
     public static interface onTouchAixsDataListener {
-        void onTouchAixsData(int xAixsTitle, int yAixsTitle, int yAuxAixsTitle);
+        void onTouchAixsData(List<DataAixsPoint> aixsDatas);
     }
+
 }
